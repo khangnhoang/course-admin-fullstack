@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { courseRouter } from "./modules/courses/course.routes.js";
 
 const app = express();
 
@@ -17,5 +18,7 @@ app.get("/api/health", (_req, res) => {
     service: "course-admin-api",
   });
 });
+
+app.use("/api/courses", courseRouter);
 
 export { app };
