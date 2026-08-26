@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { courseRouter } from "./modules/courses/course.routes.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 
@@ -20,5 +21,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/courses", courseRouter);
+
+app.use(errorHandler);
 
 export { app };
