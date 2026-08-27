@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CourseTable } from "./components/CourseTable";
-import type { Course, CourseStatus } from "./types/course";
+import type { Course, CourseStatus, CreateCourseInput, UpdateCourseInput } from "./types/course";
 import { CourseForm } from "./components/CourseForm";
 import {
   createCourses,
@@ -137,7 +137,7 @@ function App() {
     setEditingCourse(course);
   };
 
-  const handleCreateCourse = async (course: Course) => {
+  const handleCreateCourse = async (course: CreateCourseInput) => {
     try {
       await createCourses(course);
 
@@ -148,9 +148,9 @@ function App() {
     }
   };
 
-  const handleUpdateCourse = async (updatedCourse: Course) => {
+  const handleUpdateCourse = async (id: string, input: UpdateCourseInput) => {
     try {
-      await updateCourse(updatedCourse);
+      await updateCourse(id, input);
 
       setEditingCourse(null);
       prepareLoad();

@@ -1,13 +1,22 @@
-import { initialCourses } from "../data/courses";
-import type { Course, CourseList } from "../types/course";
+import type {
+  Course,
+  CourseList,
+  CreateCourseInput,
+  UpdateCourseInput,
+} from "../types/course";
 import type { Topic } from "../types/topics";
 import { initialTopics } from "../data/topics";
 import { delay } from "../utils/delay";
+const COURSE_API_URL = "http://localhost:3000/api/courses";
 
 export async function getCourses(): Promise<CourseList> {
-  await delay();
+  const response = await fetch(COURSE_API_URL);
 
-  return [...initialCourses];
+  if (!response.ok) {
+    throw new Error("Failed to fetch courses");
+  }
+
+  return response.json();
 }
 
 export async function getTopics(): Promise<Topic[]> {
@@ -16,36 +25,47 @@ export async function getTopics(): Promise<Topic[]> {
   return [...initialTopics];
 }
 
-export async function createCourses(course: Course) {
-  await delay();
+export async function createCourses(input: CreateCourseInput): Promise<Course> {
+  const response = await fetch(COURSE_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
 
-  initialCourses.push(course);
-}
-
-export async function updateCourse(updatedCourse: Course) {
-  await delay();
-
-  const index = initialCourses.findIndex(
-    (course) => course.id === updatedCourse.id,
-  );
-
-  if (index === -1) {
-    throw new Error("course not found");
+  if (!response.ok) {
+    throw new Error("Failed to create course");
   }
 
-  initialCourses[index] = updatedCourse;
+  return response.json();
 }
 
-export async function deleteCourse(id: string) {
-  await delay();
+export async function updateCourse(
+  id: string,
+  input: UpdateCourseInput,
+): Promise<Course> {
+  const response = await fetch(`${COURSE_API_URL}/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
 
-  const index = initialCourses.findIndex((course) => course.id === id);
-
-  if (index === -1) {
-    throw new Error("Course not found");
+  if (!response.ok) {
+    throw new Error("Failed to update course");
   }
 
-  initialCourses.splice(index, 1);
+  return response.json();
 }
 
+export async function deleteCourse(id: string): Promise<void> {
+  const response = await fetch(`${COURSE_API_URL}/${id}`, {
+    method: "DELETE",
+  });
 
+  if (!response.ok) {
+    throw new Error("Failed to delete course");
+  }
+}

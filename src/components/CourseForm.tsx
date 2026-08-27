@@ -1,10 +1,15 @@
 import { useState } from "react";
-import type { Course, CourseStatus } from "../types/course";
+import type {
+  Course,
+  CourseStatus,
+  CreateCourseInput,
+  UpdateCourseInput,
+} from "../types/course";
 
 type CourseFormProps = {
-  onCreateCourse: (course: Course) => Promise<void>;
+  onCreateCourse: (course: CreateCourseInput) => Promise<void>;
   editingCourse: Course | null;
-  onUpdateCourse: (course: Course) => Promise<void>;
+  onUpdateCourse: (id: string, input: UpdateCourseInput) => Promise<void>;
   onCancelEdit: () => void;
 };
 
@@ -31,21 +36,18 @@ export function CourseForm({
     }
 
     if (editingCourse) {
-      const updatedCourse = {
-        ...editingCourse,
+      const input: UpdateCourseInput = {
         title: trimmedTitle,
         status,
       };
 
-      await onUpdateCourse(updatedCourse);
+      await onUpdateCourse(editingCourse.id, input);
       return;
     }
 
-    const newCourse: Course = {
-      id: crypto.randomUUID(),
+    const newCourse: CreateCourseInput = {
       title: trimmedTitle,
       status,
-      createdAt: new Date().toISOString().slice(0, 10),
     };
 
     await onCreateCourse(newCourse);
