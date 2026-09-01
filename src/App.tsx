@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react";
 import { CourseTable } from "./components/CourseTable";
-import type { Course, CourseStatus, CreateCourseInput, UpdateCourseInput } from "./types/course";
+import type {
+  Course,
+  CourseStatus,
+  CreateCourseInput,
+  UpdateCourseInput,
+} from "./types/course";
 import { CourseForm } from "./components/CourseForm";
 import {
   createCourses,
   deleteCourse,
   getCourses,
   updateCourse,
-  getTopics,
 } from "./services/courseServices";
-import { createTopic, updateTopic } from "./services/topicServices";
+import {
+  createTopic,
+  getTopicsByCourseId,
+  updateTopic,
+} from "./services/topicServices";
 import type { Topic } from "./types/topics";
 import { CourseFilters } from "./components/CourseFilter";
 import { CourseDetail } from "./components/CourseDetail";
@@ -99,16 +107,11 @@ function App() {
   };
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadCourses = async () => {
       try {
-        const [coursesData, topicsData] = await Promise.all([
-          getCourses(),
-          getTopics(),
-        ]);
+        const coursesData = await getCourses();
 
         setCourses(coursesData);
-        setTopics(topicsData);
-
         setErrorMessage(null);
       } catch {
         setErrorMessage("Failed to load data");
@@ -117,8 +120,27 @@ function App() {
       }
     };
 
-    void loadData();
+    void loadCourses();
   }, [refreshKey]);
+
+  useEffect(() => {
+    const loadTopics = async () => {
+      if (!courseDetailId) {
+        setTopics([]);
+        return;
+      }
+
+      try {
+        const topicsData = await getTopicsByCourseId(courseDetailId);
+
+        setTopics(topicsData);
+      } catch {
+        setErrorMessage("Failed to load topics");
+      }
+    };
+
+    void loadTopics();
+  }, [courseDetailId, refreshKey]);
 
   const prepareLoad = () => {
     setIsLoading(true);
@@ -196,30 +218,20 @@ function App() {
       return;
     }
 
-    const courseTopics = topics.filter(
-      (topic) => topic.courseId === createTopicCourseId,
-    );
+    try {
+      await createTopic(createTopicCourseId, {
+        title: trimmedTitle,
+      });
 
-    const nextOrderIndex =
-      courseTopics.length === 0
-        ? 1
-        : Math.max(...courseTopics.map((topic) => topic.orderIndex)) + 1;
+      setCreateTopicTitle("");
+      setCreateTopicCourseId("");
+      setIsCreateTopic(false);
 
-    const validTopic: Topic = {
-      id: crypto.randomUUID(),
-      title: trimmedTitle,
-      courseId: createTopicCourseId,
-      orderIndex: nextOrderIndex,
-    };
-
-    await createTopic(validTopic);
-
-    setCreateTopicTitle("");
-    setCreateTopicCourseId("");
-    setIsCreateTopic(false);
-
-    prepareLoad();
-    setRefreshKey((current) => current + 1);
+      prepareLoad();
+      setRefreshKey((current) => current + 1);
+    } catch {
+      setErrorMessage("Failed to create topic");
+    }
   };
 
   const handleCloseCreateTopicModal = () => {
@@ -253,18 +265,13 @@ function App() {
     const currentOrderIndex = currentTopic.orderIndex;
     const targetOrderIndex = targetTopic.orderIndex;
 
-    const updatedCurrentTopic = {
-      ...currentTopic,
+    await updateTopic(currentTopic.id, {
       orderIndex: targetOrderIndex,
-    };
+    });
 
-    const updatedTargetTopic = {
-      ...targetTopic,
+    await updateTopic(targetTopic.id, {
       orderIndex: currentOrderIndex,
-    };
-
-    await updateTopic(updatedCurrentTopic);
-    await updateTopic(updatedTargetTopic);
+    });
 
     prepareLoad();
     setRefreshKey((current) => current + 1);
@@ -306,6 +313,10 @@ function App() {
       />
 
       <p>Total courses: {courses.length}</p>
+
+      <button type="button" onClick={() => setIsCreateTopic(true)}>
+        Create Topic
+      </button>
 
       <div className="btn-container">
         <button onClick={() => setShowCourses((current) => !current)}>
