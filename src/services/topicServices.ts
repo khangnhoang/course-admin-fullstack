@@ -1,23 +1,81 @@
-import type { Topic } from "../types/topics";
-import { initialTopics } from "../data/topics";
-import { delay } from "../utils/delay";
+import type {
+  CreateTopicInput,
+  Topic,
+  UpdateTopicInput,
+} from "../types/topics";
 
-export async function createTopic(input: Topic) {
-  await delay();
+const COURSE_API_URL = "http://localhost:3000/api/courses";
+const TOPIC_API_URL = "http://localhost:3000/api/topics";
 
-  initialTopics.push(input);
-}
-
-export async function updateTopic(updatedTopic: Topic): Promise<void> {
-  await delay();
-
-  const index = initialTopics.findIndex(
-    (topic) => topic.id === updatedTopic.id,
+export async function getTopicsByCourseId(
+  courseId: string,
+): Promise<Topic[]> {
+  const response = await fetch(
+    `${COURSE_API_URL}/${courseId}/topics`,
   );
 
-  if (index === -1) {
-    throw new Error("Topic not found");
+  if (!response.ok) {
+    throw new Error("Failed to fetch topics");
   }
 
-  initialTopics[index] = updatedTopic;
+  return response.json();
+}
+
+export async function createTopic(
+  courseId: string,
+  input: CreateTopicInput,
+): Promise<Topic> {
+  const response = await fetch(
+    `${COURSE_API_URL}/${courseId}/topics`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to create topic");
+  }
+
+  return response.json();
+}
+
+export async function updateTopic(
+  id: string,
+  input: UpdateTopicInput,
+): Promise<Topic> {
+  const response = await fetch(
+    `${TOPIC_API_URL}/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update topic");
+  }
+
+  return response.json();
+}
+
+export async function deleteTopic(
+  id: string,
+): Promise<void> {
+  const response = await fetch(
+    `${TOPIC_API_URL}/${id}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to delete topic");
+  }
 }

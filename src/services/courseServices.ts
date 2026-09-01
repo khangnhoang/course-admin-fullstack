@@ -4,9 +4,6 @@ import type {
   CreateCourseInput,
   UpdateCourseInput,
 } from "../types/course";
-import type { Topic } from "../types/topics";
-import { initialTopics } from "../data/topics";
-import { delay } from "../utils/delay";
 const COURSE_API_URL = "http://localhost:3000/api/courses";
 
 export async function getCourses(): Promise<CourseList> {
@@ -17,12 +14,6 @@ export async function getCourses(): Promise<CourseList> {
   }
 
   return response.json();
-}
-
-export async function getTopics(): Promise<Topic[]> {
-  await delay();
-
-  return [...initialTopics];
 }
 
 export async function createCourses(input: CreateCourseInput): Promise<Course> {
