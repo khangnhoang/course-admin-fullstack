@@ -16,13 +16,14 @@ import {
 import {
   createTopic,
   getTopicsByCourseId,
-  updateTopic,
+  moveTopic,
 } from "./services/topicServices";
 import type { Topic } from "./types/topics";
 import { CourseFilters } from "./components/CourseFilter";
 import { CourseDetail } from "./components/CourseDetail";
 import { CreateTopicForm } from "./components/CreateTopicForm";
 import type { SortOrder } from "./types/course";
+import type { TopicMoveDirection } from "./types/topics";
 
 function App() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -238,43 +239,18 @@ function App() {
     setIsCreateTopic(false);
   };
 
-  const handleMoveTopic = async (topicId: string, direction: "up" | "down") => {
-    const currentTopic = topics.find((topic) => topic.id === topicId);
+  const handleMoveTopic = async (
+    topicId: string,
+    direction: TopicMoveDirection,
+  ) => {
+    try {
+      await moveTopic(topicId, direction);
 
-    if (!currentTopic) {
-      return;
+      prepareLoad();
+      setRefreshKey((current) => current + 1);
+    } catch {
+      setErrorMessage("Failed to move topic");
     }
-
-    const courseTopics = topics
-      .filter((topic) => topic.courseId === currentTopic.courseId)
-      .sort((a, b) => a.orderIndex - b.orderIndex);
-
-    const currentIndex = courseTopics.findIndex(
-      (topic) => topic.id === topicId,
-    );
-
-    const targetIndex =
-      direction === "up" ? currentIndex - 1 : currentIndex + 1;
-
-    if (targetIndex < 0 || targetIndex >= courseTopics.length) {
-      return;
-    }
-
-    const targetTopic = courseTopics[targetIndex];
-
-    const currentOrderIndex = currentTopic.orderIndex;
-    const targetOrderIndex = targetTopic.orderIndex;
-
-    await updateTopic(currentTopic.id, {
-      orderIndex: targetOrderIndex,
-    });
-
-    await updateTopic(targetTopic.id, {
-      orderIndex: currentOrderIndex,
-    });
-
-    prepareLoad();
-    setRefreshKey((current) => current + 1);
   };
 
   return (

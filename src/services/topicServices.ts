@@ -2,6 +2,7 @@ import type {
   CreateTopicInput,
   Topic,
   UpdateTopicInput,
+  TopicMoveDirection,
 } from "../types/topics";
 
 const COURSE_API_URL = "http://localhost:3000/api/courses";
@@ -78,4 +79,26 @@ export async function deleteTopic(
   if (!response.ok) {
     throw new Error("Failed to delete topic");
   }
+}
+
+export async function moveTopic(
+  id: string,
+  direction: TopicMoveDirection,
+): Promise<Topic> {
+  const response = await fetch(
+    `${TOPIC_API_URL}/${id}/move`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ direction }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to move topic");
+  }
+
+  return response.json();
 }

@@ -12,24 +12,16 @@ export const createTopicSchema = z.object({
   title: z.string().trim().min(1),
 });
 
-export const updateTopicSchema = z
-  .object({
-    title: z.string().trim().min(1).optional(),
-    orderIndex: z.number().int().positive().optional(),
-  })
-  .refine(
-    (data) =>
-      data.title !== undefined ||
-      data.orderIndex !== undefined,
-    {
-      message: "At least one field is required",
-    },
-  );
+export const updateTopicSchema = z.object({
+  title: z.string().trim().min(1),
+});
 
-export type CreateTopicInput = z.infer<
-  typeof createTopicSchema
->;
+export type CreateTopicInput = z.infer<typeof createTopicSchema>;
 
-export type UpdateTopicInput = z.infer<
-  typeof updateTopicSchema
->;
+export type UpdateTopicInput = z.infer<typeof updateTopicSchema>;
+
+export const moveTopicSchema = z.object({
+  direction: z.enum(["up", "down"]),
+});
+
+export type MoveTopicInput = z.infer<typeof moveTopicSchema>;

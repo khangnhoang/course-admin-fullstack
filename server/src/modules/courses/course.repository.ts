@@ -1,5 +1,6 @@
 import { pool } from "../../db/pool.js";
 import type { CreateCourseInput, UpdateCourseInput } from "./course.schema.js";
+import type { PoolClient } from "pg";
 
 export async function findAllCourses() {
   const result = await pool.query(`
@@ -75,6 +76,23 @@ export async function deleteCourseById(id: string) {
       DELETE FROM courses
       WHERE id = $1
       RETURNING id
+    `,
+    [id],
+  );
+
+  return result.rows[0];
+}
+
+export async function lockCourseById(
+  client: PoolClient,
+  id: string,
+) {
+  const result = await client.query(
+    `
+      SELECT id
+      FROM courses
+      WHERE id = $1
+      FOR UPDATE
     `,
     [id],
   );
