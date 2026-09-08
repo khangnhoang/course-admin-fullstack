@@ -7,4 +7,6 @@ export type Topic = {
 
 export type CreateTopicInput = Pick<Topic, "title">;
 
-export type UpdateTopicInput = Partial<Pick<Topic, "title" | "orderIndex">>;
+export type UpdateTopicInput = Pick<Topic, "title">;
+
+export type TopicMoveDirection = "up" | "down";

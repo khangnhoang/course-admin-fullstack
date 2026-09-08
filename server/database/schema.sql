@@ -13,13 +13,16 @@ CREATE TABLE courses (
 
 CREATE TABLE topics (
   id UUID PRIMARY KEY DEFAULT uuidv4(),
+
   course_id UUID NOT NULL
     REFERENCES courses(id)
     ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  order_index INTEGER NOT NULL
-    CHECK (order_index > 0)
-);
 
-CREATE INDEX idx_topics_course_id
-ON topics(course_id);
+  title TEXT NOT NULL,
+
+  order_index INTEGER NOT NULL
+    CHECK (order_index > 0),
+
+  CONSTRAINT topics_course_order_unique
+  UNIQUE (course_id, order_index)
+);
