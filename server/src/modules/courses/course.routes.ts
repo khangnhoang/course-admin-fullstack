@@ -6,6 +6,7 @@ import {
   createCourseController,
   updateCourseController,
   deleteCourseController,
+  getCourseOptionsController,
 } from "./course.controller.js";
 
 import {
@@ -16,19 +17,13 @@ import {
 const courseRouter = Router();
 
 courseRouter.get("/", getCoursesController);
+courseRouter.get("/options", getCourseOptionsController);
 courseRouter.get("/:id", getCourseByIdController);
 courseRouter.post("/", createCourseController);
 courseRouter.patch("/:id", updateCourseController);
 courseRouter.delete("/:id", deleteCourseController);
+courseRouter.get("/:courseId/topics", getTopicsByCourseIdController);
 
-courseRouter.get(
-  "/:courseId/topics",
-  getTopicsByCourseIdController,
-);
-
-courseRouter.post(
-  "/:courseId/topics",
-  createTopicController,
-);
+courseRouter.post("/:courseId/topics", createTopicController);
 
 export { courseRouter };
