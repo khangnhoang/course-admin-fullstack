@@ -34,3 +34,37 @@ export type CreateCourseInput = z.infer<
 export type UpdateCourseInput = z.infer<
   typeof updateCourseSchema
 >;
+
+export const courseListQuerySchema = z.object({
+  search: z.string().trim().optional(),
+
+  status: z
+    .enum(["draft", "published", "archived"])
+    .optional(),
+
+  sort: z
+    .enum([
+      "newest",
+      "oldest",
+      "title-asc",
+      "title-desc",
+    ])
+    .default("newest"),
+
+  page: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(1),
+
+  limit: z.coerce
+    .number()
+    .int()
+    .positive()
+    .max(100)
+    .default(10),
+});
+
+export type CourseListQuery = z.infer<
+  typeof courseListQuerySchema
+>;

@@ -5,6 +5,7 @@ import {
   createCourseSchema,
   courseIdParamsSchema,
   updateCourseSchema,
+  courseListQuerySchema,
 } from "./course.schema.js";
 
 import {
@@ -13,12 +14,30 @@ import {
   createCourse,
   updateCourse,
   deleteCourse,
+  getCourseOptions,
 } from "./course.service.js";
 
-export async function getCoursesController(_req: Request, res: Response) {
-  const courses = await getCourses();
+export async function getCoursesController(
+  req: Request,
+  res: Response,
+) {
+  const parsedQuery =
+    courseListQuerySchema.safeParse(req.query);
 
-  res.status(200).json(courses);
+  if (!parsedQuery.success) {
+    res.status(400).json({
+      message: "Invalid course query",
+      errors: z.flattenError(parsedQuery.error),
+    });
+
+    return;
+  }
+
+  const result = await getCourses(
+    parsedQuery.data,
+  );
+
+  res.status(200).json(result);
 }
 
 export async function getCourseByIdController(
@@ -123,4 +142,13 @@ export async function deleteCourseController(
   }
 
   res.status(204).send();
+}
+
+export async function getCourseOptionsController(
+  req: Request,
+  res: Response,
+) {
+  const options = await getCourseOptions();
+
+  res.status(200).json(options);
 }
