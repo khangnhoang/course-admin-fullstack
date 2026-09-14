@@ -1,13 +1,36 @@
 import type {
   Course,
-  CourseList,
   CreateCourseInput,
   UpdateCourseInput,
+  CourseListQuery,
+  CourseListResponse,
+  CourseOption,
 } from "../types/course";
-const COURSE_API_URL = "http://localhost:3000/api/courses";
 
-export async function getCourses(): Promise<CourseList> {
-  const response = await fetch(COURSE_API_URL);
+import { API_URL } from "../config/api";
+
+const COURSE_API_URL = `${API_URL}/api/courses`;
+
+export async function getCourses(
+  query: CourseListQuery,
+): Promise<CourseListResponse> {
+  const params = new URLSearchParams();
+
+  if (query.search) {
+    params.set("search", query.search);
+  }
+
+  if (query.status) {
+    params.set("status", query.status);
+  }
+
+  params.set("sort", query.sort);
+  params.set("page", String(query.page));
+  params.set("limit", String(query.limit));
+
+  const response = await fetch(
+    `${COURSE_API_URL}?${params.toString()}`,
+  );
 
   if (!response.ok) {
     throw new Error("Failed to fetch courses");
@@ -59,4 +82,14 @@ export async function deleteCourse(id: string): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to delete course");
   }
+}
+
+export async function getCourseOptions(): Promise<CourseOption[]> {
+  const response = await fetch(`${COURSE_API_URL}/options`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch course options");
+  }
+
+  return response.json();
 }

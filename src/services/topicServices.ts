@@ -5,8 +5,10 @@ import type {
   TopicMoveDirection,
 } from "../types/topics";
 
-const COURSE_API_URL = "http://localhost:3000/api/courses";
-const TOPIC_API_URL = "http://localhost:3000/api/topics";
+import { API_URL } from "../config/api";
+
+const COURSE_API_URL = `${API_URL}/api/courses`;
+const TOPIC_API_URL = `${API_URL}/api/topics`;
 
 export async function getTopicsByCourseId(
   courseId: string,
