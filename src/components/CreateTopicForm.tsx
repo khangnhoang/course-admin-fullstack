@@ -1,10 +1,10 @@
-import type { Course } from "../types/course";
+import type { CourseOption } from "../types/course";
 import { X } from "lucide-react";
 
 type CreateTopicFormProps = {
   title: string;
   courseId: string;
-  courses: Course[];
+  courses: CourseOption[];
 
   onTitleChange: (value: string) => void;
   onCourseChange: (value: string) => void;

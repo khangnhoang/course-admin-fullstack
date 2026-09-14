@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { CourseTable } from "./components/CourseTable";
 import type {
   Course,
+  CourseOption,
   CourseStatus,
   CreateCourseInput,
   UpdateCourseInput,
@@ -10,6 +11,7 @@ import { CourseForm } from "./components/CourseForm";
 import {
   createCourses,
   deleteCourse,
+  getCourseOptions,
   getCourses,
   updateCourse,
 } from "./services/courseServices";
@@ -36,7 +38,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<CourseStatus | "all">("all");
 
-  const [sortOrder, setSortOrder] = useState<SortOrder>("title-asc");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [courseDetailId, setCourseDetailId] = useState<string | null>(null);
 
@@ -46,51 +48,18 @@ function App() {
   const [createTopicCourseId, setCreateTopicCourseId] = useState("");
   const [isCreateTopic, setIsCreateTopic] = useState(false);
 
+  const [totalCourses, setTotalCourses] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const [courseOptions, setCourseOptions] = useState<CourseOption[]>([]);
+
+  const pageSize = 10;
+
   const courseDetail = courses.find((course) => course.id === courseDetailId);
 
   const courseDetailTopics = topics
     .filter((topic) => topic.courseId === courseDetailId)
     .sort((a, b) => a.orderIndex - b.orderIndex);
-
-  const pageSize = 5;
-
-  const filteredCourses = courses
-    .filter((course) =>
-      course.title
-        .trim()
-        .toLowerCase()
-        .includes(searchTerm.trim().toLowerCase()),
-    )
-    .filter((course) =>
-      statusFilter === "all" ? true : course.status === statusFilter,
-    );
-
-  const displayedCourses = [...filteredCourses].sort((a, b) => {
-    switch (sortOrder) {
-      case "title-asc":
-        return a.title.localeCompare(b.title);
-
-      case "title-desc":
-        return b.title.localeCompare(a.title);
-
-      case "newest":
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-
-      case "oldest":
-        return (
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-    }
-  });
-
-  const totalPages = Math.ceil(displayedCourses.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-
-  const endIndex = startIndex + pageSize;
-
-  const paginatedCourses = displayedCourses.slice(startIndex, endIndex);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -110,9 +79,17 @@ function App() {
   useEffect(() => {
     const loadCourses = async () => {
       try {
-        const coursesData = await getCourses();
+        const result = await getCourses({
+          search: searchTerm.trim() || undefined,
+          status: statusFilter === "all" ? undefined : statusFilter,
+          sort: sortOrder,
+          page: currentPage,
+          limit: pageSize,
+        });
 
-        setCourses(coursesData);
+        setCourses(result.data);
+        setTotalCourses(result.pagination.total);
+        setTotalPages(result.pagination.totalPages);
         setErrorMessage(null);
       } catch {
         setErrorMessage("Failed to load data");
@@ -122,7 +99,7 @@ function App() {
     };
 
     void loadCourses();
-  }, [refreshKey]);
+  }, [refreshKey, searchTerm, statusFilter, sortOrder, currentPage]);
 
   useEffect(() => {
     const loadTopics = async () => {
@@ -142,6 +119,19 @@ function App() {
 
     void loadTopics();
   }, [courseDetailId, refreshKey]);
+
+  useEffect(() => {
+  const loadCourseOptions = async () => {
+    try {
+      const options = await getCourseOptions();
+      setCourseOptions(options);
+    } catch {
+      setErrorMessage("Failed to load course options");
+    }
+  };
+
+  void loadCourseOptions();
+}, [refreshKey]);
 
   const prepareLoad = () => {
     setIsLoading(true);
@@ -263,7 +253,7 @@ function App() {
         <CreateTopicForm
           title={createTopicTitle}
           courseId={createTopicCourseId}
-          courses={courses}
+          courses={courseOptions}
           onTitleChange={setCreateTopicTitle}
           onCourseChange={setCreateTopicCourseId}
           onCreate={handleCreateTopic}
@@ -288,7 +278,7 @@ function App() {
         onCancelEdit={handleCancelEdit}
       />
 
-      <p>Total courses: {courses.length}</p>
+      <p>Total courses: {totalCourses}</p>
 
       <button type="button" onClick={() => setIsCreateTopic(true)}>
         Create Topic
@@ -311,7 +301,7 @@ function App() {
 
       {showCourses && (
         <CourseTable
-          courses={paginatedCourses}
+          courses={courses}
           onEditCourse={handleEditCourse}
           onDeleteCourse={handleDeleteCourse}
           onViewCourse={setCourseDetailId}
