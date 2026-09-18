@@ -3,6 +3,7 @@ import cors from "cors";
 import { courseRouter } from "./modules/courses/course.routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { topicRouter } from "./modules/topics/topic.routes.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.get("/api/health", (_req, res) => {
 
 app.use("/api/courses", courseRouter);
 app.use("/api/topics", topicRouter);
+app.use("/api/auth", authRouter);
 
 app.use(errorHandler);
 
