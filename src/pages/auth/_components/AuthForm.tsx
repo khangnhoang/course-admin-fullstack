@@ -4,6 +4,7 @@ import type { AuthInput, AuthMode } from "../../../types/auth";
 type AuthFormProps = {
   mode: AuthMode;
   onSubmit: (input: AuthInput) => Promise<void>;
+  error?: string;
 };
 
 type FloatingInputProps = {
@@ -60,16 +61,11 @@ function FloatingInput({
   );
 }
 
-export function AuthForm({
-  mode,
-  onSubmit,
-}: AuthFormProps) {
+export function AuthForm({ mode, onSubmit, error }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     await onSubmit({
@@ -93,9 +89,7 @@ export function AuthForm({
         "
       >
         <div>
-          <p className="text-sm font-medium text-indigo-400">
-            Course Admin
-          </p>
+          <p className="text-sm font-medium text-indigo-400">Course Admin</p>
 
           <h1 className="mt-2 text-3xl font-semibold text-white">
             {isRegister ? "Create account" : "Welcome back"}
@@ -125,6 +119,8 @@ export function AuthForm({
             activeLabel="Password"
           />
         </div>
+
+        {error && <p className="text-sm text-rose-400">{error}</p>}
 
         <button
           type="submit"
