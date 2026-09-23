@@ -26,3 +26,10 @@ CREATE TABLE topics (
   CONSTRAINT topics_course_order_unique
   UNIQUE (course_id, order_index)
 );
+
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
