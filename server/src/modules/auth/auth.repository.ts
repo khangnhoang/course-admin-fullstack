@@ -35,3 +35,19 @@ export async function createUser(
 
   return result.rows[0];
 }
+
+export async function findUserById(id: string) {
+  const result = await pool.query(
+    `
+      SELECT
+        id,
+        email,
+        created_at AS "createdAt"
+      FROM users
+      WHERE id = $1
+    `,
+    [id],
+  );
+
+  return result.rows[0] ?? null;
+}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Header } from "./components/Header";
 import { AuthPage } from "./pages/auth/AuthPage";
@@ -6,6 +6,7 @@ import CourseManagementPage from "./pages/course-management/CourseManagementPage
 import { HomePage } from "./pages/home/HomePage";
 import { Toaster } from "@/components/ui/toast";
 import type { AuthUser } from "@/types/auth";
+import {getMe} from "@/services/authServices";
 
 function App() {
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -13,6 +14,27 @@ function App() {
   function handleAuthenticated(user: AuthUser) {
     setCurrentUserEmail(user.email);
   }
+
+  useEffect(() => {
+  async function restoreSession() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      return;
+    }
+
+    try {
+      const user = await getMe();
+
+      setCurrentUserEmail(user.email);
+    } catch {
+      localStorage.removeItem("token");
+      setCurrentUserEmail(null);
+    }
+  }
+
+  restoreSession();
+}, []);
 
   return (
     <div className="min-h-screen">
