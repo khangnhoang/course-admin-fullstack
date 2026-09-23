@@ -6,7 +6,7 @@ import CourseManagementPage from "./pages/course-management/CourseManagementPage
 import { HomePage } from "./pages/home/HomePage";
 import { Toaster } from "@/components/ui/toast";
 import type { AuthUser } from "@/types/auth";
-import {getMe} from "@/services/authServices";
+import { getMe } from "@/services/authServices";
 
 function App() {
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -15,30 +15,35 @@ function App() {
     setCurrentUserEmail(user.email);
   }
 
-  useEffect(() => {
-  async function restoreSession() {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      return;
-    }
-
-    try {
-      const user = await getMe();
-
-      setCurrentUserEmail(user.email);
-    } catch {
-      localStorage.removeItem("token");
-      setCurrentUserEmail(null);
-    }
+  function handleLogout() {
+    localStorage.removeItem("token");
+    setCurrentUserEmail(null);
   }
 
-  restoreSession();
-}, []);
+  useEffect(() => {
+    async function restoreSession() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        return;
+      }
+
+      try {
+        const user = await getMe();
+
+        setCurrentUserEmail(user.email);
+      } catch {
+        localStorage.removeItem("token");
+        setCurrentUserEmail(null);
+      }
+    }
+
+    restoreSession();
+  }, []);
 
   return (
     <div className="min-h-screen">
-      <Header currentUserEmail={currentUserEmail} />
+      <Header currentUserEmail={currentUserEmail} onLogout={handleLogout} />
 
       <Toaster />
 
